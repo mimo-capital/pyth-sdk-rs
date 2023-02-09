@@ -1,29 +1,13 @@
 //! Structures and functions for interacting with Solana on-chain account data.
 
-use borsh::{
-    BorshDeserialize,
-    BorshSerialize,
-};
-use bytemuck::{
-    cast_slice,
-    from_bytes,
-    try_cast_slice,
-    Pod,
-    PodCastError,
-    Zeroable,
-};
-use pyth_sdk::{
-    PriceIdentifier,
-    UnixTimestamp,
-};
+use borsh::{BorshDeserialize, BorshSerialize};
+use bytemuck::{cast_slice, from_bytes, try_cast_slice, Pod, PodCastError, Zeroable};
+use pyth_sdk::{PriceIdentifier, UnixTimestamp};
 use solana_program::clock::Clock;
 use solana_program::pubkey::Pubkey;
 use std::mem::size_of;
 
-pub use pyth_sdk::{
-    Price,
-    PriceFeed,
-};
+pub use pyth_sdk::{Price, PriceFeed};
 
 use crate::PythError;
 
@@ -110,7 +94,6 @@ impl Default for PriceType {
     }
 }
 
-
 /// Represents availability status of a price feed.
 #[derive(
     Copy,
@@ -148,29 +131,26 @@ impl Default for PriceStatus {
 #[repr(C)]
 pub struct MappingAccount {
     /// pyth magic number
-    pub magic:    u32,
+    pub magic: u32,
     /// program version
-    pub ver:      u32,
+    pub ver: u32,
     /// account type
-    pub atype:    u32,
+    pub atype: u32,
     /// account used size
-    pub size:     u32,
+    pub size: u32,
     /// number of product accounts
-    pub num:      u32,
-    pub unused:   u32,
+    pub num: u32,
+    pub unused: u32,
     /// next mapping account (if any)
-    pub next:     Pubkey,
+    pub next: Pubkey,
     pub products: [Pubkey; MAP_TABLE_SIZE],
 }
 
 #[cfg(target_endian = "little")]
-unsafe impl Zeroable for MappingAccount {
-}
+unsafe impl Zeroable for MappingAccount {}
 
 #[cfg(target_endian = "little")]
-unsafe impl Pod for MappingAccount {
-}
-
+unsafe impl Pod for MappingAccount {}
 
 /// Product accounts contain metadata for a single product, such as its symbol ("Crypto.BTC/USD")
 /// and its base/quote currencies.
@@ -178,17 +158,17 @@ unsafe impl Pod for MappingAccount {
 #[repr(C)]
 pub struct ProductAccount {
     /// pyth magic number
-    pub magic:  u32,
+    pub magic: u32,
     /// program version
-    pub ver:    u32,
+    pub ver: u32,
     /// account type
-    pub atype:  u32,
+    pub atype: u32,
     /// price account size
-    pub size:   u32,
+    pub size: u32,
     /// first price account in list
     pub px_acc: Pubkey,
     /// key/value pairs of reference attr.
-    pub attr:   [u8; PROD_ATTR_SIZE],
+    pub attr: [u8; PROD_ATTR_SIZE],
 }
 
 impl ProductAccount {
@@ -198,12 +178,10 @@ impl ProductAccount {
 }
 
 #[cfg(target_endian = "little")]
-unsafe impl Zeroable for ProductAccount {
-}
+unsafe impl Zeroable for ProductAccount {}
 
 #[cfg(target_endian = "little")]
-unsafe impl Pod for ProductAccount {
-}
+unsafe impl Pod for ProductAccount {}
 
 /// A price and confidence at a specific slot. This struct can represent either a
 /// publisher's contribution or the outcome of price aggregation.
@@ -224,13 +202,13 @@ pub struct PriceInfo {
     /// the current price.
     /// For the aggregate price use `get_price_no_older_than()` whenever possible. Accessing fields
     /// directly might expose you to stale or invalid prices.
-    pub price:    i64,
+    pub price: i64,
     /// confidence interval around the price.
     /// For the aggregate confidence use `get_price_no_older_than()` whenever possible. Accessing
     /// fields directly might expose you to stale or invalid prices.
-    pub conf:     u64,
+    pub conf: u64,
     /// status of price (Trading is valid)
-    pub status:   PriceStatus,
+    pub status: PriceStatus,
     /// notification of any corporate action
     pub corp_act: CorpAction,
     pub pub_slot: u64,
@@ -254,10 +232,10 @@ pub struct PriceComp {
     /// key of contributing publisher
     pub publisher: Pubkey,
     /// the price used to compute the current aggregate price
-    pub agg:       PriceInfo,
+    pub agg: PriceInfo,
     /// The publisher's latest price. This price will be incorporated into the aggregate price
     /// when price aggregation runs next.
-    pub latest:    PriceInfo,
+    pub latest: PriceInfo,
 }
 
 #[deprecated = "Type is renamed to Rational, please use the new name."]
@@ -278,7 +256,7 @@ pub type Ema = Rational;
 )]
 #[repr(C)]
 pub struct Rational {
-    pub val:   i64,
+    pub val: i64,
     pub numer: i64,
     pub denom: i64,
 }
@@ -288,64 +266,62 @@ pub struct Rational {
 #[repr(C)]
 pub struct PriceAccount {
     /// pyth magic number
-    pub magic:          u32,
+    pub magic: u32,
     /// program version
-    pub ver:            u32,
+    pub ver: u32,
     /// account type
-    pub atype:          u32,
+    pub atype: u32,
     /// price account size
-    pub size:           u32,
+    pub size: u32,
     /// price or calculation type
-    pub ptype:          PriceType,
+    pub ptype: PriceType,
     /// price exponent
-    pub expo:           i32,
+    pub expo: i32,
     /// number of component prices
-    pub num:            u32,
+    pub num: u32,
     /// number of quoters that make up aggregate
-    pub num_qt:         u32,
+    pub num_qt: u32,
     /// slot of last valid (not unknown) aggregate price
-    pub last_slot:      u64,
+    pub last_slot: u64,
     /// valid slot-time of agg. price
-    pub valid_slot:     u64,
+    pub valid_slot: u64,
     /// exponentially moving average price
-    pub ema_price:      Rational,
+    pub ema_price: Rational,
     /// exponentially moving average confidence interval
-    pub ema_conf:       Rational,
+    pub ema_conf: Rational,
     /// unix timestamp of aggregate price
-    pub timestamp:      i64,
+    pub timestamp: i64,
     /// min publishers for valid price
-    pub min_pub:        u8,
+    pub min_pub: u8,
     /// space for future derived values
-    pub drv2:           u8,
+    pub drv2: u8,
     /// space for future derived values
-    pub drv3:           u16,
+    pub drv3: u16,
     /// space for future derived values
-    pub drv4:           u32,
+    pub drv4: u32,
     /// product account key
-    pub prod:           Pubkey,
+    pub prod: Pubkey,
     /// next Price account in linked list
-    pub next:           Pubkey,
+    pub next: Pubkey,
     /// valid slot of previous update
-    pub prev_slot:      u64,
+    pub prev_slot: u64,
     /// aggregate price of previous update with TRADING status
-    pub prev_price:     i64,
+    pub prev_price: i64,
     /// confidence interval of previous update with TRADING status
-    pub prev_conf:      u64,
+    pub prev_conf: u64,
     /// unix timestamp of previous aggregate with TRADING status
     pub prev_timestamp: i64,
     /// aggregate price info
-    pub agg:            PriceInfo,
+    pub agg: PriceInfo,
     /// price components one per quoter
-    pub comp:           [PriceComp; 32],
+    pub comp: [PriceComp; 32],
 }
 
 #[cfg(target_endian = "little")]
-unsafe impl Zeroable for PriceAccount {
-}
+unsafe impl Zeroable for PriceAccount {}
 
 #[cfg(target_endian = "little")]
-unsafe impl Pod for PriceAccount {
-}
+unsafe impl Pod for PriceAccount {}
 
 impl PriceAccount {
     pub fn get_publish_time(&self) -> UnixTimestamp {
@@ -362,18 +338,18 @@ impl PriceAccount {
             && self.agg.pub_slot >= clock.slot - slot_threshold
         {
             return Some(Price {
-                conf:         self.agg.conf,
-                expo:         self.expo,
-                price:        self.agg.price,
+                conf: self.agg.conf,
+                expo: self.expo,
+                price: self.agg.price,
                 publish_time: self.timestamp,
             });
         }
 
         if self.prev_slot >= clock.slot - slot_threshold {
             return Some(Price {
-                conf:         self.prev_conf,
-                expo:         self.expo,
-                price:        self.prev_price,
+                conf: self.prev_conf,
+                expo: self.expo,
+                price: self.prev_price,
                 publish_time: self.prev_timestamp,
             });
         }
@@ -386,23 +362,23 @@ impl PriceAccount {
 
         let price = match status {
             PriceStatus::Trading => Price {
-                conf:         self.agg.conf,
-                expo:         self.expo,
-                price:        self.agg.price,
+                conf: self.agg.conf,
+                expo: self.expo,
+                price: self.agg.price,
                 publish_time: self.get_publish_time(),
             },
             _ => Price {
-                conf:         self.prev_conf,
-                expo:         self.expo,
-                price:        self.prev_price,
+                conf: self.prev_conf,
+                expo: self.expo,
+                price: self.prev_price,
                 publish_time: self.get_publish_time(),
             },
         };
 
         let ema_price = Price {
-            conf:         self.ema_conf.val as u64,
-            expo:         self.expo,
-            price:        self.ema_price.val,
+            conf: self.ema_conf.val as u64,
+            expo: self.expo,
+            price: self.ema_price.val,
             publish_time: self.get_publish_time(),
         };
 
@@ -502,21 +478,11 @@ fn get_attr_str(buf: &[u8]) -> (&str, &[u8]) {
 
 #[cfg(test)]
 mod test {
-    use pyth_sdk::{
-        Identifier,
-        Price,
-        PriceFeed,
-    };
+    use pyth_sdk::{Identifier, Price, PriceFeed};
     use solana_program::clock::Clock;
     use solana_program::pubkey::Pubkey;
 
-    use super::{
-        PriceAccount,
-        PriceInfo,
-        PriceStatus,
-        Rational,
-    };
-
+    use super::{PriceAccount, PriceInfo, PriceStatus, Rational};
 
     #[test]
     fn test_trading_price_to_price_feed() {
@@ -551,15 +517,15 @@ mod test {
             PriceFeed::new(
                 Identifier::new(pubkey.to_bytes()),
                 Price {
-                    conf:         20,
-                    price:        10,
-                    expo:         5,
+                    conf: 20,
+                    price: 10,
+                    expo: 5,
                     publish_time: 200,
                 },
                 Price {
-                    conf:         50,
-                    price:        40,
-                    expo:         5,
+                    conf: 50,
+                    price: 40,
+                    expo: 5,
                     publish_time: 200,
                 }
             )
@@ -599,15 +565,15 @@ mod test {
             PriceFeed::new(
                 Identifier::new(pubkey.to_bytes()),
                 Price {
-                    conf:         70,
-                    price:        60,
-                    expo:         5,
+                    conf: 70,
+                    price: 60,
+                    expo: 5,
                     publish_time: 100,
                 },
                 Price {
-                    conf:         50,
-                    price:        40,
-                    expo:         5,
+                    conf: 50,
+                    price: 40,
+                    expo: 5,
                     publish_time: 100,
                 }
             )
@@ -640,9 +606,9 @@ mod test {
         assert_eq!(
             price_account.get_price_no_older_than(&clock, 4),
             Some(Price {
-                conf:         20,
-                expo:         5,
-                price:        10,
+                conf: 20,
+                expo: 5,
+                price: 10,
                 publish_time: 200,
             })
         );
@@ -675,9 +641,9 @@ mod test {
         assert_eq!(
             price_account.get_price_no_older_than(&clock, 4),
             Some(Price {
-                conf:         70,
-                expo:         5,
-                price:        60,
+                conf: 70,
+                expo: 5,
+                price: 60,
                 publish_time: 100,
             })
         );

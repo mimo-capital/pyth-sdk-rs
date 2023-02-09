@@ -1,10 +1,7 @@
 use schemars::schema_for;
 use serde_json::to_string_pretty;
 use std::env::current_dir;
-use std::fs::{
-    create_dir_all,
-    write,
-};
+use std::fs::{create_dir_all, write};
 
 use pyth_sdk::PriceFeed;
 

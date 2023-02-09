@@ -4,19 +4,12 @@
 // Please use account structure only if you need it.
 
 use pyth_sdk_solana::state::{
-    load_mapping_account,
-    load_price_account,
-    load_product_account,
-    CorpAction,
-    PriceType,
+    load_mapping_account, load_price_account, load_product_account, CorpAction, PriceType,
 };
 use solana_client::rpc_client::RpcClient;
 use solana_program::pubkey::Pubkey;
 use std::str::FromStr;
-use std::time::{
-    SystemTime,
-    UNIX_EPOCH,
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 fn get_price_type(ptype: &PriceType) -> &'static str {
     match ptype {

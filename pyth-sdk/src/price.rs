@@ -1,16 +1,10 @@
-use borsh::{
-    BorshDeserialize,
-    BorshSerialize,
-};
+use borsh::{BorshDeserialize, BorshSerialize};
 
 use std::convert::TryFrom;
 
 use schemars::JsonSchema;
 
-use crate::{
-    utils,
-    UnixTimestamp,
-};
+use crate::{utils, UnixTimestamp};
 
 // Constants for working with pyth's number representation
 const PD_EXPO: i32 = -9;
@@ -57,13 +51,13 @@ pub struct Price {
     /// Price.
     #[serde(with = "utils::as_string")] // To ensure accuracy on conversion to json.
     #[schemars(with = "String")]
-    pub price:        i64,
+    pub price: i64,
     /// Confidence interval.
     #[serde(with = "utils::as_string")]
     #[schemars(with = "String")]
-    pub conf:         u64,
+    pub conf: u64,
     /// Exponent.
-    pub expo:         i32,
+    pub expo: i32,
     /// Publish time.
     pub publish_time: UnixTimestamp,
 }
@@ -133,15 +127,15 @@ impl Price {
 
         // get price versions of discounts
         let initial_percentage = Price {
-            price:        i64::try_from(rate_discount_initial).ok()?,
-            conf:         0,
-            expo:         discount_exponent,
+            price: i64::try_from(rate_discount_initial).ok()?,
+            conf: 0,
+            expo: discount_exponent,
             publish_time: 0,
         };
         let final_percentage = Price {
-            price:        i64::try_from(rate_discount_final).ok()?,
-            conf:         0,
-            expo:         discount_exponent,
+            price: i64::try_from(rate_discount_final).ok()?,
+            conf: 0,
+            expo: discount_exponent,
             publish_time: 0,
         };
 
@@ -164,9 +158,9 @@ impl Price {
             .scale_to_exponent(expo_orig)?;
 
         return Some(Price {
-            price:        price_discounted.price,
-            conf:         conf_orig,
-            expo:         price_discounted.expo,
+            price: price_discounted.price,
+            conf: conf_orig,
+            expo: price_discounted.expo,
             publish_time: self.publish_time,
         });
     }
@@ -213,15 +207,15 @@ impl Price {
 
         // get price versions of premiums
         let initial_percentage = Price {
-            price:        i64::try_from(rate_premium_initial).ok()?,
-            conf:         0,
-            expo:         premium_exponent,
+            price: i64::try_from(rate_premium_initial).ok()?,
+            conf: 0,
+            expo: premium_exponent,
             publish_time: 0,
         };
         let final_percentage = Price {
-            price:        i64::try_from(rate_premium_final).ok()?,
-            conf:         0,
-            expo:         premium_exponent,
+            price: i64::try_from(rate_premium_final).ok()?,
+            conf: 0,
+            expo: premium_exponent,
             publish_time: 0,
         };
 
@@ -244,9 +238,9 @@ impl Price {
             .scale_to_exponent(expo_orig)?;
 
         return Some(Price {
-            price:        price_premium.price,
-            conf:         conf_orig,
-            expo:         price_premium.expo,
+            price: price_premium.price,
+            conf: conf_orig,
+            expo: price_premium.expo,
             publish_time: self.publish_time,
         });
     }
@@ -375,9 +369,9 @@ impl Price {
         }
 
         let mut res = Price {
-            price:        0,
-            conf:         0,
-            expo:         result_expo,
+            price: 0,
+            conf: 0,
+            expo: result_expo,
             publish_time: amounts[0].0.publish_time,
         };
         for amount in amounts {
@@ -450,11 +444,11 @@ impl Price {
         // price.
         if conf < (u64::MAX as u128) {
             Some(Price {
-                price:        (midprice as i64)
+                price: (midprice as i64)
                     .checked_mul(base_sign)?
                     .checked_mul(other_sign)?,
-                conf:         conf as u64,
-                expo:         midprice_expo,
+                conf: conf as u64,
+                expo: midprice_expo,
                 publish_time: self.publish_time.min(other.publish_time),
             })
         } else {
@@ -485,9 +479,9 @@ impl Price {
     /// Multiply this `Price` by a constant `c * 10^e`.
     pub fn cmul(&self, c: i64, e: i32) -> Option<Price> {
         self.mul(&Price {
-            price:        c,
-            conf:         0,
-            expo:         e,
+            price: c,
+            conf: 0,
+            expo: e,
             publish_time: self.publish_time,
         })
     }
@@ -542,9 +536,9 @@ impl Price {
         }
 
         Some(Price {
-            price:        (p as i64).checked_mul(s)?,
-            conf:         c,
-            expo:         e,
+            price: (p as i64).checked_mul(s)?,
+            conf: c,
+            expo: e,
             publish_time: self.publish_time,
         })
     }
@@ -569,9 +563,9 @@ impl Price {
             }
 
             Some(Price {
-                price:        p,
-                conf:         c,
-                expo:         target_expo,
+                price: p,
+                conf: c,
+                expo: target_expo,
                 publish_time: self.publish_time,
             })
         } else {
@@ -586,9 +580,9 @@ impl Price {
             }
 
             Some(Price {
-                price:        p,
-                conf:         c,
-                expo:         target_expo,
+                price: p,
+                conf: c,
+                expo: target_expo,
                 publish_time: self.publish_time,
             })
         }
@@ -622,15 +616,15 @@ impl Price {
     fn fraction(x: i64, y: i64) -> Option<Price> {
         // convert x and y to Prices
         let x_as_price = Price {
-            price:        x,
-            conf:         0,
-            expo:         0,
+            price: x,
+            conf: 0,
+            expo: 0,
             publish_time: 0,
         };
         let y_as_price = Price {
-            price:        y,
-            conf:         0,
-            expo:         0,
+            price: y,
+            conf: 0,
+            expo: 0,
             publish_time: 0,
         };
 
@@ -646,12 +640,7 @@ mod test {
     use quickcheck::TestResult;
     use std::convert::TryFrom;
 
-    use crate::price::{
-        Price,
-        MAX_PD_V_U64,
-        PD_EXPO,
-        PD_SCALE,
-    };
+    use crate::price::{Price, MAX_PD_V_U64, PD_EXPO, PD_SCALE};
 
     const MAX_PD_V_I64: i64 = MAX_PD_V_U64 as i64;
     const MIN_PD_V_I64: i64 = -MAX_PD_V_I64;
@@ -675,7 +664,6 @@ mod test {
         .scale_to_exponent(expo)
         .unwrap()
     }
-
 
     #[test]
     fn test_normalize() {
@@ -1921,7 +1909,6 @@ mod test {
             pc(0, MAX_PD_V_U64 / 2, -9),
         );
 
-
         // Test with combinations of (in)exact fractions + (un)normalized ys; making pre_add_expo
         // very small to abstract away scaling error exact fraction, normalized ys --> exact
         // result
@@ -1986,7 +1973,6 @@ mod test {
             -18,
             pc(-267_912_188_120_944_640, 0, -18),
         );
-
 
         // test w confidence (same at both endpoints)--expect linear change btwn x1 and x2 and
         // growth in conf as distance from interval [x1, x2] increases
@@ -2053,9 +2039,9 @@ mod test {
 
     pub fn construct_quickcheck_affine_combination_price(price: i64) -> Price {
         return Price {
-            price:        price,
-            conf:         0,
-            expo:         -9,
+            price: price,
+            conf: 0,
+            expo: -9,
             publish_time: 0,
         };
     }

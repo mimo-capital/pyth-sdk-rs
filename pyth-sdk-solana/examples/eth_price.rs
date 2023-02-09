@@ -4,15 +4,8 @@ use pyth_sdk_solana::load_price_feed_from_account;
 use solana_client::rpc_client::RpcClient;
 use solana_program::pubkey::Pubkey;
 use std::str::FromStr;
-use std::time::{
-    SystemTime,
-    UNIX_EPOCH,
-};
-use std::{
-    thread,
-    time,
-};
-
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::{thread, time};
 
 fn main() {
     let url = "http:/pythnet.rpcpool.com";
@@ -45,7 +38,6 @@ fn main() {
                 println!("conf ............ unavailable");
             }
         }
-
 
         let maybe_ema_price = eth_price_feed.get_ema_price_no_older_than(current_time, 60);
         match maybe_ema_price {

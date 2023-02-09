@@ -5,11 +5,7 @@
 /// compiler cannot distinguish them.
 pub mod as_string {
     use serde::de::Error;
-    use serde::{
-        Deserialize,
-        Deserializer,
-        Serializer,
-    };
+    use serde::{Deserialize, Deserializer, Serializer};
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where

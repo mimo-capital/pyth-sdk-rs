@@ -2,10 +2,7 @@
 //! Only the program admin can issue the Init instruction.
 //! And anyone can check the loan with the Loan2Value instruction.
 
-use solana_program::account_info::{
-    next_account_info,
-    AccountInfo,
-};
+use solana_program::account_info::{next_account_info, AccountInfo};
 use solana_program::entrypoint::ProgramResult;
 use solana_program::msg;
 use solana_program::program_error::ProgramError;
@@ -14,10 +11,7 @@ use solana_program::pubkey::Pubkey;
 use solana_program::sysvar::clock::Clock;
 use solana_program::sysvar::Sysvar;
 
-use borsh::{
-    BorshDeserialize,
-    BorshSerialize,
-};
+use borsh::{BorshDeserialize, BorshSerialize};
 use pyth_sdk_solana::load_price_feed_from_account_info;
 
 use crate::instruction::ExampleInstructions;

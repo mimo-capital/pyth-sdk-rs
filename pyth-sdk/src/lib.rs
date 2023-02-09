@@ -4,10 +4,7 @@ extern crate quickcheck;
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
 
-use borsh::{
-    BorshDeserialize,
-    BorshSerialize,
-};
+use borsh::{BorshDeserialize, BorshSerialize};
 
 use hex::FromHexError;
 use schemars::JsonSchema;
@@ -109,9 +106,9 @@ pub type DurationInSeconds = u64;
 #[repr(C)]
 pub struct PriceFeed {
     /// Unique identifier for this price.
-    pub id:    PriceIdentifier,
+    pub id: PriceIdentifier,
     /// Price.
-    price:     Price,
+    price: Price,
     /// Exponentially-weighted moving average (EMA) price.
     ema_price: Price,
 }
@@ -127,7 +124,6 @@ impl PriceFeed {
         }
     }
 
-
     /// Get the "unchecked" price and confidence interval as fixed-point numbers of the form
     /// a * 10^e along with its publish time.
     ///
@@ -140,7 +136,6 @@ impl PriceFeed {
     pub fn get_price_unchecked(&self) -> Price {
         self.price
     }
-
 
     /// Get the "unchecked" exponentially-weighted moving average (EMA) price and a confidence
     /// interval on the result along with its publish time.

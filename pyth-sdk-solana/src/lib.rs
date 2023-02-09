@@ -7,21 +7,12 @@ pub use self::error::PythError;
 mod error;
 pub mod state;
 
-use solana_program::account_info::{
-    Account,
-    AccountInfo,
-    IntoAccountInfo,
-};
+use solana_program::account_info::{Account, AccountInfo, IntoAccountInfo};
 use solana_program::pubkey::Pubkey;
 
 use state::load_price_account;
 
-pub use pyth_sdk::{
-    Price,
-    PriceFeed,
-    PriceIdentifier,
-    ProductIdentifier,
-};
+pub use pyth_sdk::{Price, PriceFeed, PriceIdentifier, ProductIdentifier};
 
 /// Maximum valid slot period before price is considered to be stale.
 pub const VALID_SLOT_PERIOD: u64 = 25;
