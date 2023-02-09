@@ -116,8 +116,6 @@ pub enum PriceStatus {
     Halted,
     /// The price feed is not currently updating because an auction is setting the price.
     Auction,
-    /// A price component can be ignored if the confidence interval is too wide
-    Ignored,
 }
 
 impl Default for PriceStatus {
@@ -200,14 +198,16 @@ unsafe impl Pod for ProductAccount {}
 #[repr(C)]
 pub struct PriceInfo {
     /// the current price.
-    /// For the aggregate price use `get_price_no_older_than()` whenever possible. Accessing fields
-    /// directly might expose you to stale or invalid prices.
+    /// For the aggregate price use price.get_current_price() whenever possible. It has more checks
+    /// to make sure price is valid.
     pub price: i64,
     /// confidence interval around the price.
-    /// For the aggregate confidence use `get_price_no_older_than()` whenever possible. Accessing
-    /// fields directly might expose you to stale or invalid prices.
+    /// For the aggregate confidence use price.get_current_price() whenever possible. It has more
+    /// checks to make sure price is valid.
     pub conf: u64,
-    /// status of price (Trading is valid)
+    /// status of price (Trading is valid).
+    /// For the aggregate status use price.get_current_status() whenever possible.
+    /// Price data can sometimes go stale and the function handles the status in such cases.
     pub status: PriceStatus,
     /// notification of any corporate action
     pub corp_act: CorpAction,
@@ -262,7 +262,18 @@ pub struct Rational {
 }
 
 /// Price accounts represent a continuously-updating price feed for a product.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    BorshSerialize,
+    BorshDeserialize,
+    serde::Serialize,
+    serde::Deserialize,
+)]
 #[repr(C)]
 pub struct PriceAccount {
     /// pyth magic number
@@ -313,8 +324,6 @@ pub struct PriceAccount {
     pub prev_timestamp: i64,
     /// aggregate price info
     pub agg: PriceInfo,
-    /// price components one per quoter
-    pub comp: [PriceComp; 32],
 }
 
 #[cfg(target_endian = "little")]

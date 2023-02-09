@@ -10,7 +10,9 @@ pub mod state;
 use solana_program::account_info::{Account, AccountInfo, IntoAccountInfo};
 use solana_program::pubkey::Pubkey;
 
-use state::load_price_account;
+use borsh::BorshDeserialize;
+
+use state::PriceAccount;
 
 pub use pyth_sdk::{Price, PriceFeed, PriceIdentifier, ProductIdentifier};
 
@@ -24,7 +26,8 @@ pub fn load_price_feed_from_account_info(
     let data = price_account_info
         .try_borrow_data()
         .map_err(|_| PythError::InvalidAccountData)?;
-    let price_account = load_price_account(*data)?;
+    let price_account =
+        PriceAccount::try_from_slice(*data).map_err(|_| PythError::InvalidAccountData)?;
 
     Ok(price_account.to_price_feed(price_account_info.key))
 }
